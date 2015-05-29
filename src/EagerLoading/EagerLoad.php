@@ -16,6 +16,8 @@ final class EagerLoad {
 	private $parent;
 	/** @var null|ModelInterface[] */
 	private $subject;
+	/** @var boolean */
+	static private $isPhalcon2;
 
 	/**
 	 * @param RelationInterface
@@ -23,6 +25,10 @@ final class EagerLoad {
 	 * @param Loader|EagerLoad $parent
 	 */
 	public function __construct(Relation $relation, callable $constraints = NULL, $parent) {
+		if (static::$isPhalcon2 === NULL) {
+			static::$isPhalcon2 = version_compare(\Phalcon\Version::get(), '2.0.0') >= 0;
+		}
+
 		$this->relation    = $relation;
 		$this->constraints = $constraints;
 		$this->parent      = $parent;
@@ -40,6 +46,8 @@ final class EagerLoad {
 	 *
 	 * Note: The {$alias} property is set two times because Phalcon Model ignores
 	 * empty arrays when overloading property set.
+	 *
+	 * Also {@see https://github.com/stibiumz/phalcon.eager-loading/issues/1}
 	 *
 	 * @return $this
 	 */
@@ -141,6 +149,11 @@ final class EagerLoad {
 					}
 
 					$record->{$alias} = $referencedModels;
+
+					if (static::$isPhalcon2) {
+						$record->{$alias} = NULL;
+						$record->{$alias} = $referencedModels;
+					}
 				}
 				else {
 					$record->{$alias} = NULL;
@@ -175,6 +188,11 @@ final class EagerLoad {
 					}
 					else {
 						$record->{$alias} = $records;
+
+						if (static::$isPhalcon2) {
+							$record->{$alias} = NULL;
+							$record->{$alias} = $records;
+						}
 					}
 				}
 			}
@@ -198,6 +216,11 @@ final class EagerLoad {
 
 					if (isset ($indexedRecords[$referencedFieldValue])) {
 						$record->{$alias} = $indexedRecords[$referencedFieldValue];
+
+						if (static::$isPhalcon2 && is_array($indexedRecords[$referencedFieldValue])) {
+							$record->{$alias} = NULL;
+							$record->{$alias} = $indexedRecords[$referencedFieldValue];
+						}
 					}
 					else {
 						$record->{$alias} = NULL;
