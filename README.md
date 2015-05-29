@@ -1,4 +1,4 @@
-This package provides eager-loading support for Phalcon 1.3.*, should work with 2.0, but is not tested.
+This package provides eager-loading support for Phalcon 1.3.* - 2.0.*. Requires PHP 5.6
 
 Usage
 -----
@@ -16,7 +16,7 @@ $robotsAndParts = Robot::with('Parts');
 
 $robots = Robot::find();
 foreach ($robots as $robot) {
-	$robots->parts; // $robot->__get('parts')
+	$robot->parts; // $robot->__get('parts')
 }
 
 // Or
