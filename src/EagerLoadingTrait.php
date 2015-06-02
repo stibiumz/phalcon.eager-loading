@@ -24,7 +24,7 @@ trait EagerLoadingTrait {
 	 * </code>
 	 *
 	 * @param mixed ...$arguments
-	 * @return ModelInterface[]
+	 * @return Phalcon\Mvc\ModelInterface[]
 	 */
 	static public function with() {
 		$arguments = func_get_args();
@@ -53,7 +53,7 @@ trait EagerLoadingTrait {
 		if ($ret[0]) {
 			array_unshift($arguments, $ret);
 
-			$ret = call_user_func_array('Loader::fromResultset', $arguments);
+			$ret = call_user_func_array('Sb\Framework\Mvc\Model\EagerLoading\Loader::fromResultset', $arguments);
 		}
 
 		return $ret;
@@ -63,9 +63,9 @@ trait EagerLoadingTrait {
 	 * Same as EagerLoadingTrait::with() for a single record
 	 *
 	 * @param mixed ...$arguments
-	 * @return false|ModelInterface
+	 * @return false|Phalcon\Mvc\ModelInterface
 	 */
-	static public function findFirstWith(...$arguments) {
+	static public function findFirstWith() {
 		$arguments = func_get_args();
 
 		if (! empty ($arguments)) {
@@ -90,7 +90,7 @@ trait EagerLoadingTrait {
 		if ($ret = static::findFirst($parameters)) {
 			array_unshift($arguments, $ret);
 
-			$ret = call_user_func_array('Loader::fromModel', $arguments);
+			$ret = call_user_func_array('Sb\Framework\Mvc\Model\EagerLoading\Loader::fromModel', $arguments);
 		}
 
 		return $ret;
@@ -117,6 +117,6 @@ trait EagerLoadingTrait {
 
 		array_unshift($arguments, $this);
 
-		return call_user_func_array('Loader::fromModel', $arguments);
+		return call_user_func_array('Sb\Framework\Mvc\Model\EagerLoading\Loader::fromModel', $arguments);
 	}
 }

@@ -14,7 +14,7 @@ final class EagerLoad {
 	private $constraints;
 	/** @var Loader|EagerLoad */
 	private $parent;
-	/** @var null|ModelInterface[] */
+	/** @var null|Phalcon\Mvc\ModelInterface[] */
 	private $subject;
 	/** @var boolean */
 	static private $isPhalcon2;
@@ -24,18 +24,18 @@ final class EagerLoad {
 	 * @param null|callable $constraints
 	 * @param Loader|EagerLoad $parent
 	 */
-	public function __construct(Relation $relation, callable $constraints = NULL, $parent) {
+	public function __construct(Relation $relation, $constraints, $parent) {
 		if (static::$isPhalcon2 === NULL) {
 			static::$isPhalcon2 = version_compare(\Phalcon\Version::get(), '2.0.0') >= 0;
 		}
 
 		$this->relation    = $relation;
-		$this->constraints = $constraints;
+		$this->constraints = is_callable($constraints) ? $constraints : NULL;
 		$this->parent      = $parent;
 	}
 
 	/**
-	 * @return null|ModelInterface[]
+	 * @return null|Phalcon\Mvc\ModelInterface[]
 	 */
 	public function getSubject() {
 		return $this->subject;
@@ -54,7 +54,8 @@ final class EagerLoad {
 	public function load() {
 		$relation = $this->relation;
 
-		$alias                = strtolower($relation->getOptions()['alias']);
+		$alias                = $relation->getOptions();
+		$alias                = strtolower($alias['alias']);
 		$relField             = $relation->getFields();
 		$relReferencedModel   = $relation->getReferencedModel();
 		$relReferencedField   = $relation->getReferencedFields();
@@ -103,7 +104,8 @@ final class EagerLoad {
 				// extra query
 				$isManyToManyForMany = TRUE;
 
-				$relIrValues = (new QueryBuilder)
+				$relIrValues = new QueryBuilder;
+				$relIrValues = $relIrValues
 					->from($relIrModel)
 					->inWhere("[{$relIrModel}].[{$relIrField}]", $bindValues)
 					->getQuery()
@@ -111,7 +113,7 @@ final class EagerLoad {
 					->setHydrateMode(Resultset::HYDRATE_ARRAYS)
 				;
 
-				$bindValues = $modelReferencedModelValues = [];
+				$bindValues = $modelReferencedModelValues = array ();
 				
 				foreach ($relIrValues as $row) {
 					$bindValues[$row[$relIrReferencedField]] = TRUE;
@@ -131,7 +133,7 @@ final class EagerLoad {
 			call_user_func($this->constraints, $builder);
 		}
 
-		$records = [];
+		$records = array ();
 
 		if ($isManyToManyForMany) {
 			foreach ($builder->getQuery()->execute() as $record) {
@@ -142,7 +144,7 @@ final class EagerLoad {
 				$referencedFieldValue = $record->readAttribute($relField);
 
 				if (isset ($modelReferencedModelValues[$referencedFieldValue])) {
-					$referencedModels = [];
+					$referencedModels = array ();
 
 					foreach ($modelReferencedModelValues[$referencedFieldValue] as $idx => $_) {
 						$referencedModels[] = $records[$idx];
@@ -157,7 +159,7 @@ final class EagerLoad {
 				}
 				else {
 					$record->{$alias} = NULL;
-					$record->{$alias} = [];
+					$record->{$alias} = array ();
 				}
 			}
 
@@ -176,15 +178,16 @@ final class EagerLoad {
 					$records[] = $record;
 				}
 
+				$record = $this->parent->getSubject();
+				$record = $record[0];
+
 				if ($isSingle) {
-					$this->parent->getSubject()[0]->{$alias} = empty ($records) ? NULL : $records[0];
+					$record->{$alias} = empty ($records) ? NULL : $records[0];
 				}
 				else {
-					$record = $this->parent->getSubject()[0];
-					
 					if (empty ($records)) {
 						$record->{$alias} = NULL;
-						$record->{$alias} = [];
+						$record->{$alias} = array ();
 					}
 					else {
 						$record->{$alias} = $records;
@@ -197,7 +200,7 @@ final class EagerLoad {
 				}
 			}
 			else {
-				$indexedRecords = [];
+				$indexedRecords = array ();
 
 				// Keep all records in memory
 				foreach ($builder->getQuery()->execute() as $record) {
@@ -226,7 +229,7 @@ final class EagerLoad {
 						$record->{$alias} = NULL;
 						
 						if (! $isSingle) {
-							$record->{$alias} = [];
+							$record->{$alias} = array ();
 						}
 					}
 				}

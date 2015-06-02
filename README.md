@@ -1,4 +1,5 @@
-This package provides eager-loading support for Phalcon 1.3.* - 2.0.*. Requires PHP 5.6
+This package provides eager-loading support for Phalcon 1.3.* - 2.0.*.
+This branch requires PHP 5.3.21, and PHP 5.4 if you want to use the Trait.
 
 Usage
 -----

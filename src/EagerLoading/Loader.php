@@ -18,11 +18,12 @@ final class Loader {
 
 	/**
 	 * @param ModelInterface|ModelInterface[]|Simple $from
-	 * @param array $arguments
+	 * @param ...$arguments
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct($from, ...$arguments) {
-		$error = FALSE;
+	public function __construct($from) {
+		$error     = FALSE;
+		$arguments = array_slice(func_get_args(), 1);
 
 		if (! $from instanceof ModelInterface) {
 			if (! $from instanceof Simple) {
@@ -60,7 +61,7 @@ final class Loader {
 			}
 			else {
 				$prev = $from;
-				$from = [];
+				$from = array ();
 
 				foreach ($prev as $record) {
 					$from[] = $record;
@@ -78,7 +79,7 @@ final class Loader {
 		}
 		else {
 			$className = get_class($from);
-			$from      = [$from];
+			$from      = array ($from);
 
 			$this->mustReturnAModel = TRUE;
 		}
@@ -89,7 +90,7 @@ final class Loader {
 
 		$this->subject          = $from;
 		$this->subjectClassName = $className;
-		$this->eagerLoads       = empty ($arguments) ? [] : static::parseArguments($arguments);
+		$this->eagerLoads       = empty ($arguments) ? array () : static::parseArguments($arguments);
 	}
 
 	/**
@@ -100,15 +101,15 @@ final class Loader {
 	 * @throws \InvalidArgumentException
 	 * @return mixed
 	 */
-	static public function from($subject, ...$arguments) {
+	static public function from($subject) {
 		if ($subject instanceof ModelInterface) {
-			$ret = static::fromModel($subject, ...$arguments);
+			$ret = call_user_func_array('static::fromModel', func_get_args());
 		}
 		else if ($subject instanceof Simple) {
-			$ret = static::fromResultset($subject, ...$arguments);
+			$ret = call_user_func_array('static::fromResultset', func_get_args());
 		}
 		else if (is_array($subject)) {
-			$ret = static::fromArray($subject, ...$arguments);
+			$ret = call_user_func_array('static::fromArray', func_get_args());
 		}
 		else {
 			throw new \InvalidArgumentException(static::E_INVALID_SUBJECT);
@@ -124,8 +125,11 @@ final class Loader {
 	 * @param mixed ...$arguments
 	 * @return ModelInterface
 	 */
-	static public function fromModel(ModelInterface $subject, ...$arguments) {
-		return (new static($subject, ...$arguments))->execute()->get();
+	static public function fromModel(ModelInterface $subject) {
+		$reflection = new \ReflectionClass(__CLASS__);
+		$instance   = $reflection->newInstanceArgs(func_get_args());
+		
+		return $instance->execute()->get();
 	}
 
 	/**
@@ -135,8 +139,11 @@ final class Loader {
 	 * @param mixed ...$arguments
 	 * @return array
 	 */
-	static public function fromArray(array $subject, ...$arguments) {
-		return (new static($subject, ...$arguments))->execute()->get();
+	static public function fromArray(array $subject) {
+		$reflection = new \ReflectionClass(__CLASS__);
+		$instance   = $reflection->newInstanceArgs(func_get_args());
+		
+		return $instance->execute()->get();
 	}
 
 	/**
@@ -146,8 +153,11 @@ final class Loader {
 	 * @param mixed ...$arguments
 	 * @return Simple
 	 */
-	static public function fromResultset(Simple $subject, ...$arguments) {
-		return (new static($subject, ...$arguments))->execute()->get();
+	static public function fromResultset(Simple $subject) {
+		$reflection = new \ReflectionClass(__CLASS__);
+		$instance   = $reflection->newInstanceArgs(func_get_args());
+		
+		return $instance->execute()->get();
 	}
 
 	/**
@@ -182,7 +192,7 @@ final class Loader {
 			throw new \InvalidArgumentException('Arguments can not be empty');
 		}
 
-		$relations = [];
+		$relations = array ();
 
 		if (count($arguments) === 1 && isset ($arguments[0]) && is_array($arguments[0])) {
 			foreach ($arguments[0] as $relationAlias => $queryConstraints) {
@@ -216,11 +226,18 @@ final class Loader {
 	 * @param null|callable $constraints
 	 * @return $this
 	 */
-	public function addEagerLoad($relationAlias, callable $constraints = NULL) {
+	public function addEagerLoad($relationAlias, $constraints = NULL) {
 		if (! is_string($relationAlias)) {
 			throw new \InvalidArgumentException(sprintf(
 				'$relationAlias expects to be a string, `%s` given',
 				gettype($relationAlias)
+			));
+		}
+
+		if ($constraints !== NULL && ! is_callable($constraints)) {
+			throw new \InvalidArgumentException(sprintf(
+				'$constraints expects to be a callable, `%s` given',
+				gettype($constraints)
 			));
 		}
 
@@ -241,7 +258,7 @@ final class Loader {
 		$di = \Phalcon\DI::getDefault();
 		$mM = $di['modelsManager'];
 
-		$eagerLoads = $resolvedRelations = [];
+		$eagerLoads = $resolvedRelations = array ();
 
 		foreach ($this->eagerLoads as $relationAliases => $queryConstraints) {
 			$nestingLevel    = 0;
