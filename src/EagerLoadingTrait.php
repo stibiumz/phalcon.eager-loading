@@ -26,7 +26,9 @@ trait EagerLoadingTrait {
 	 * @param mixed ...$arguments
 	 * @return ModelInterface[]
 	 */
-	static public function with(...$arguments) {
+	static public function with() {
+		$arguments = func_get_args();
+
 		if (! empty ($arguments)) {
 			$numArgs    = count($arguments);
 			$lastArg    = $numArgs - 1;
@@ -49,7 +51,9 @@ trait EagerLoadingTrait {
 		$ret = static::find($parameters);
 
 		if ($ret[0]) {
-			$ret = Loader::fromResultset($ret, ...$arguments);
+			array_unshift($arguments, $ret);
+
+			$ret = call_user_func_array('Loader::fromResultset', $arguments);
 		}
 
 		return $ret;
@@ -62,6 +66,8 @@ trait EagerLoadingTrait {
 	 * @return false|ModelInterface
 	 */
 	static public function findFirstWith(...$arguments) {
+		$arguments = func_get_args();
+
 		if (! empty ($arguments)) {
 			$numArgs    = count($arguments);
 			$lastArg    = $numArgs - 1;
@@ -82,7 +88,9 @@ trait EagerLoadingTrait {
 		}
 
 		if ($ret = static::findFirst($parameters)) {
-			$ret = Loader::fromModel($ret, ...$arguments);
+			array_unshift($arguments, $ret);
+
+			$ret = call_user_func_array('Loader::fromModel', $arguments);
 		}
 
 		return $ret;
@@ -104,7 +112,11 @@ trait EagerLoadingTrait {
 	 * @param mixed ...$arguments
 	 * @return self
 	 */
-	public function load(...$arguments) {
-		return Loader::fromModel($this, ...$arguments);
+	public function load() {
+		$arguments = func_get_args();
+
+		array_unshift($arguments, $this);
+
+		return call_user_func_array('Loader::fromModel', $arguments);
 	}
 }
