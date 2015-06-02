@@ -24,7 +24,7 @@ trait EagerLoadingTrait {
 	 * </code>
 	 *
 	 * @param mixed ...$arguments
-	 * @return ModelInterface[]
+	 * @return Phalcon\Mvc\ModelInterface[]
 	 */
 	static public function with(...$arguments) {
 		if (! empty ($arguments)) {
@@ -59,7 +59,7 @@ trait EagerLoadingTrait {
 	 * Same as EagerLoadingTrait::with() for a single record
 	 *
 	 * @param mixed ...$arguments
-	 * @return false|ModelInterface
+	 * @return false|Phalcon\Mvc\ModelInterface
 	 */
 	static public function findFirstWith(...$arguments) {
 		if (! empty ($arguments)) {

@@ -14,7 +14,7 @@ final class EagerLoad {
 	private $constraints;
 	/** @var Loader|EagerLoad */
 	private $parent;
-	/** @var null|ModelInterface[] */
+	/** @var null|Phalcon\Mvc\ModelInterface[] */
 	private $subject;
 	/** @var boolean */
 	static private $isPhalcon2;
@@ -35,7 +35,7 @@ final class EagerLoad {
 	}
 
 	/**
-	 * @return null|ModelInterface[]
+	 * @return null|Phalcon\Mvc\ModelInterface[]
 	 */
 	public function getSubject() {
 		return $this->subject;
