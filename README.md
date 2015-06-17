@@ -52,6 +52,13 @@ $robots = Robot::with(
 	]
 );
 
+// constraints with the Loader too
+$robots = Loader::fromResultset(Robot::find(), [
+        'Foo.Bar' => function (QueryBuilder $builder) {
+			$builder->where('Bar.id > 10'); 
+	             }
+]); 
+
 ```
 
 For more examples, return types etc visit the tests folder or take a look at the code, it's quite small.
