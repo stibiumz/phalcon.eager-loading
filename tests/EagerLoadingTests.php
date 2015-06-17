@@ -1,6 +1,7 @@
 <?php
 
 use Sb\Framework\Mvc\Model\EagerLoading\Loader;
+use Sb\Framework\Mvc\Model\EagerLoading\QueryBuilder;
 
 class EagerLoadingTests extends PHPUnit_Framework_TestCase {
 	public function testBelongsTo() {
@@ -243,6 +244,25 @@ class EagerLoadingTests extends PHPUnit_Framework_TestCase {
 		);
 	}
 
+    public function testManyEagerLoadsAndConstraintsWithLoaderFromResultset() {
+        $manufacturers = Loader::fromResultset(
+            Manufacturer::find(),
+            [
+                'Robots.Bugs' => function (QueryBuilder $builder) {
+                    $builder->where('Bug.id > 10');
+                }
+            ]
+        );
+
+        $robots = array ();
+        foreach ($manufacturers as $m) $robots = array_merge($robots, $m->robots);
+
+        $this->assertEquals(
+            array_sum(array_map(function ($o) { return count($o->bugs); }, $robots)),
+            134
+        );
+    }
+    
 	protected function _resultSetToEagerLoadingEquivalent($val) {
 		$ret = $val;
 
