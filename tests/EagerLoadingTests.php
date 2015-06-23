@@ -244,25 +244,31 @@ class EagerLoadingTests extends PHPUnit_Framework_TestCase {
 		);
 	}
 
-    public function testManyEagerLoadsAndConstraintsWithLoaderFromResultset() {
-        $manufacturers = Loader::fromResultset(
-            Manufacturer::find(),
-            [
-                'Robots.Bugs' => function (QueryBuilder $builder) {
-                    $builder->where('Bug.id > 10');
-                }
-            ]
-        );
+	public function testManyEagerLoadsAndConstraintsWithLoaderFromResultset() {
+		$manufacturers = Loader::fromResultset(
+			Manufacturer::find(),
+			[
+				'Robots.Bugs' => function (QueryBuilder $builder) {
+					$builder->where('Bug.id > 10');
+				}
+			]
+		);
 
-        $robots = array ();
-        foreach ($manufacturers as $m) $robots = array_merge($robots, $m->robots);
+		$robots = array ();
+		foreach ($manufacturers as $m) $robots = array_merge($robots, $m->robots);
 
-        $this->assertEquals(
-            array_sum(array_map(function ($o) { return count($o->bugs); }, $robots)),
-            134
-        );
-    }
-    
+		$this->assertEquals(
+			array_sum(array_map(function ($o) { return count($o->bugs); }, $robots)),
+			134
+		);
+	}
+
+	public function testIssue4() {
+		// Has many -> Belongs to
+		// Should be the same for Has many -> Has one
+		$this->assertEquals((new Loader(Robot::findFirstById(1), 'Bugs.Robot'))->execute()->get()->bugs, []);
+	}
+
 	protected function _resultSetToEagerLoadingEquivalent($val) {
 		$ret = $val;
 

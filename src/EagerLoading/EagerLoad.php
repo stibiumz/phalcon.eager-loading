@@ -1,8 +1,7 @@
 <?php namespace Sb\Framework\Mvc\Model\EagerLoading;
 
 use Phalcon\Mvc\Model\Relation,
-	Phalcon\Mvc\Model\Resultset,
-	Phalcon\Mvc\Model\Query\Builder;
+	Phalcon\Mvc\Model\Resultset;
 
 /**
  * Represents a level in the relations tree to be eagerly loaded
@@ -52,6 +51,10 @@ final class EagerLoad {
 	 * @return $this
 	 */
 	public function load() {
+		if (empty ($this->parent->getSubject())) {
+			return $this;
+		}
+		
 		$relation = $this->relation;
 
 		$alias                = strtolower($relation->getOptions()['alias']);
