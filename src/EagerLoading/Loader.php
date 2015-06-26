@@ -22,7 +22,8 @@ final class Loader {
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct($from, ...$arguments) {
-		$error = FALSE;
+		$error     = FALSE;
+		$className = NULL;
 
 		if (! $from instanceof ModelInterface) {
 			if (! $from instanceof Simple) {
@@ -38,8 +39,6 @@ final class Loader {
 						$from = NULL;
 					}
 					else {
-						$className = NULL;
-
 						foreach ($from as $el) {
 							if ($el instanceof ModelInterface) {
 								if ($className === NULL) {
