@@ -31,6 +31,9 @@ final class Loader {
 					if (NULL !== $from && $fromType !== 'boolean') {
 						$error = TRUE;
 					}
+					else {
+						$from = NULL;
+					}
 				}
 				else {
 					$from = array_filter($from);
