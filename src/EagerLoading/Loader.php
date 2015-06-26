@@ -33,7 +33,7 @@ final class Loader {
 					$from = array_filter($from);
 
 					if (empty ($from)) {
-						$error = TRUE;
+						$from = NULL;
 					}
 					else {
 						$className = NULL;
@@ -67,7 +67,7 @@ final class Loader {
 				}
 
 				if (empty ($from)) {
-					$error = TRUE;
+					$from = NULL;
 				}
 				else {
 					$className = get_class($record);
@@ -89,7 +89,7 @@ final class Loader {
 
 		$this->subject          = $from;
 		$this->subjectClassName = $className;
-		$this->eagerLoads       = empty ($arguments) ? [] : static::parseArguments($arguments);
+		$this->eagerLoads       = ($from === NULL || empty ($arguments)) ? [] : static::parseArguments($arguments);
 	}
 
 	/**
