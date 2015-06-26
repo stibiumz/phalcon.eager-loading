@@ -26,8 +26,10 @@ final class Loader {
 
 		if (! $from instanceof ModelInterface) {
 			if (! $from instanceof Simple) {
-				if (! is_array($from)) {
-					$error = TRUE;
+				if (($fromType = gettype($from)) !== 'array') {
+					if (NULL !== $from && $fromType !== 'boolean') {
+						$error = TRUE;
+					}
 				}
 				else {
 					$from = array_filter($from);
