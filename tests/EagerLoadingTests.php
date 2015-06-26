@@ -178,11 +178,8 @@ class EagerLoadingTests extends PHPUnit_Framework_TestCase {
 
 	public function dp3() {
 		return [
-			[NULL],
-			[[]],
 			[range(0, 5)],
-			[[Robot::findFirstById(1), Bug::findFirstById(1)]],
-			[Robot::find('id > 1000')]
+			[[Robot::findFirstById(1), Bug::findFirstById(1)]]
 		];
 	}
 
