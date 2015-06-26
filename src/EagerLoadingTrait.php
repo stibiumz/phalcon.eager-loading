@@ -48,7 +48,7 @@ trait EagerLoadingTrait {
 
 		$ret = static::find($parameters);
 
-		if ($ret[0]) {
+		if ($ret->count()) {
 			$ret = Loader::fromResultset($ret, ...$arguments);
 		}
 
