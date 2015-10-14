@@ -140,6 +140,11 @@ final class Loader {
 	 * @return array
 	 */
 	static public function fromArray(array $subject) {
+		
+		if (!count($subject)) {
+			return array();
+		}
+		
 		$reflection = new \ReflectionClass(__CLASS__);
 		$instance   = $reflection->newInstanceArgs(func_get_args());
 		
@@ -154,10 +159,15 @@ final class Loader {
 	 * @return Simple
 	 */
 	static public function fromResultset(Simple $subject) {
+		
+		if (!count($subject)) {
+			return new EagerResultset();
+		}
+		
 		$reflection = new \ReflectionClass(__CLASS__);
 		$instance   = $reflection->newInstanceArgs(func_get_args());
 		
-		return $instance->execute()->get();
+		return new EagerResultset($instance->execute()->get());
 	}
 
 	/**

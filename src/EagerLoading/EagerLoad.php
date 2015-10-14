@@ -113,14 +113,13 @@ final class EagerLoad {
 					->inWhere("[{$relIrModel}].[{$relIrField}]", $bindValues)
 					->getQuery()
 					->execute()
-					->setHydrateMode(Resultset::HYDRATE_ARRAYS)
 				;
 
 				$bindValues = $modelReferencedModelValues = array ();
 				
 				foreach ($relIrValues as $row) {
-					$bindValues[$row[$relIrReferencedField]] = TRUE;
-					$modelReferencedModelValues[$row[$relIrField]][$row[$relIrReferencedField]] = TRUE;
+					$bindValues[$row->{$relIrReferencedField}] = TRUE;
+					$modelReferencedModelValues[$row->{$relIrField}][$row->{$relIrReferencedField}] = TRUE;
 				}
 
 				unset ($relIrValues, $row);
@@ -136,7 +135,7 @@ final class EagerLoad {
 			call_user_func($this->constraints, $builder);
 		}
 
-		$records = array ();
+		$records = new EagerResultset ();
 
 		if ($isManyToManyForMany) {
 			foreach ($builder->getQuery()->execute() as $record) {
@@ -144,10 +143,11 @@ final class EagerLoad {
 			}
 
 			foreach ($this->parent->getSubject() as $record) {
+				$record->{$alias . '_eager'} = true;
 				$referencedFieldValue = $record->readAttribute($relField);
 
 				if (isset ($modelReferencedModelValues[$referencedFieldValue])) {
-					$referencedModels = array ();
+					$referencedModels = new EagerResultset ();
 
 					foreach ($modelReferencedModelValues[$referencedFieldValue] as $idx => $_) {
 						$referencedModels[] = $records[$idx];
@@ -162,11 +162,11 @@ final class EagerLoad {
 				}
 				else {
 					$record->{$alias} = NULL;
-					$record->{$alias} = array ();
+					$record->{$alias} = new EagerResultset ();
 				}
 			}
 
-			$records = array_values($records);
+			//$records = array_values($records);
 		}
 		else {
 			// We expect a single object or a set of it
@@ -183,6 +183,7 @@ final class EagerLoad {
 
 				$record = $this->parent->getSubject();
 				$record = $record[0];
+				$record->{$alias . '_eager'} = true;
 
 				if ($isSingle) {
 					$record->{$alias} = empty ($records) ? NULL : $records[0];
@@ -190,7 +191,7 @@ final class EagerLoad {
 				else {
 					if (empty ($records)) {
 						$record->{$alias} = NULL;
-						$record->{$alias} = array ();
+						$record->{$alias} = new EagerResultset ();
 					}
 					else {
 						$record->{$alias} = $records;
@@ -208,16 +209,21 @@ final class EagerLoad {
 				// Keep all records in memory
 				foreach ($builder->getQuery()->execute() as $record) {
 					$records[] = $record;
+					$id = $record->readAttribute($relReferencedField);
 
 					if ($isSingle) {
-						$indexedRecords[$record->readAttribute($relReferencedField)] = $record;
+						$indexedRecords[$id] = $record;
 					}
 					else {
-						$indexedRecords[$record->readAttribute($relReferencedField)][] = $record;
+						if (!isset($indexedRecords[$id])) {
+							$indexedRecords[$id] = new EagerResultset();
+						}
+						$indexedRecords[$id][] = $record;
 					}
 				}
 
 				foreach ($this->parent->getSubject() as $record) {
+					$record->{$alias . '_eager'} = true;
 					$referencedFieldValue = $record->readAttribute($relField);
 
 					if (isset ($indexedRecords[$referencedFieldValue])) {
@@ -232,7 +238,7 @@ final class EagerLoad {
 						$record->{$alias} = NULL;
 						
 						if (! $isSingle) {
-							$record->{$alias} = array ();
+							$record->{$alias} = new EagerResultset ();
 						}
 					}
 				}
