@@ -166,7 +166,7 @@ final class EagerLoad {
 				}
 			}
 
-			$records = array_values($records);
+			//$records = array_values($records);
 		}
 		else {
 			// We expect a single object or a set of it
